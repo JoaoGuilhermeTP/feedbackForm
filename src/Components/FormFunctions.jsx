@@ -1,18 +1,31 @@
-import React from "react";
+// src/Components/FormFunctions.jsx
+import { useState } from "react";
+import { z } from "zod";
 
-export const clearFormData = () => {
+export const useFeedbackForm = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    feedback: "",
+    rating: "",
+  });
+
+  const clearFormData = () => {
     setFormData({ name: "", email: "", feedback: "", rating: "" });
   };
 
-  export const handleChange = (event) => {
+  const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  export const handleSubmission = (event) => {
+  const handleSubmission = (event) => {
     event.preventDefault();
-    const emailSchema = z.email();
+    
+    // Fix: Correct Zod syntax is z.string().email()
+    const emailSchema = z.email(); 
     const validEmail = emailSchema.safeParse(formData.email);
+
     if (validEmail.success) {
       const confirmationMessage = `
       Name: ${formData.name}
@@ -20,16 +33,26 @@ export const clearFormData = () => {
       Feedback: ${formData.feedback}
       Rating: ${formData.rating}
       `;
+      
       const isConfirmed = window.confirm(
-        `Please confirm your details: \n\n ${confirmationMessage}`,
+        `Please confirm your details: \n\n ${confirmationMessage}`
       );
+      
       if (isConfirmed) {
-        console.log(`Submiting feedback`, formData);
+        console.log(`Submitting feedback`, formData);
         clearFormData();
         alert("Thank you for your valuable feedback");
       }
     } else {
       alert("Enter a valid e-mail");
-      clearFormData();
+      // Note: Usually better NOT to clear form on error so user can fix it
     }
   };
+
+  // Return the things the component needs
+  return {
+    formData,
+    handleChange,
+    handleSubmission,
+  };
+};
